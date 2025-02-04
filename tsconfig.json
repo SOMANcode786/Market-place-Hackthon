@@ -18,8 +18,11 @@
         "name": "next"
       }
     ],
+    "baseUrl": ".", // Ensure baseUrl is set to the root directory
     "paths": {
-      "@/*": ["./*"]
+      "@/*": ["./*"], // This maps `@/` to the root folder
+      "@/components/*": ["./components/*"], // Example: map `@/components` to the components folder
+      "@/lib/*": ["./lib/*"] // Example: map `@/lib` to the lib folder
     }
   },
   "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],

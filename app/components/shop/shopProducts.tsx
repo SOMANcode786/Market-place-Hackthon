@@ -1,239 +1,103 @@
+"use client";
 
-'use client'
-import React from 'react'
-import Image from 'next/image'
-
+import React, { useEffect, useState } from "react";
+import { Product } from "@/types/product";
+import { client } from "@/sanity/lib/client";
+import { allProducts } from "@/sanity/lib/queries";
+import Image from "next/image";
+import { urlFor } from "@/sanity/lib/image";
+import Link from "next/link";
+import { addToCart } from "@/app/actions/action";
+import Swal from "sweetalert2";
 
 const ShopProducts = () => {
-  return (
+  const [products, setProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    async function fetchProducts() {
+      try {
+        const fetchedProducts: Product[] = await client.fetch(allProducts);
+        if (fetchedProducts.length === 0) {
+          setError("No products available.");
+        }
+        setProducts(fetchedProducts);
+        setLoading(false);
+      } catch (error) {
+        console.error("Failed to fetch products", error);
+        setError("Something went wrong. Please try again.");
+        setLoading(false);
+      }
+    }
+    fetchProducts();
+  }, []);
+  const handleAddToCart=(e: React.MouseEvent,product:Product)=>{
+    e.preventDefault()
+    Swal.fire({
+      position: "top-right",
+      icon :"success",
+      title: `${product.name} add to cart`,
+      showConfirmButton:false,
+      timer:1000,
+    })
+    addToCart(product)
    
-    <div className='w-full h-[2300px] md:h-[1808px] mt-12 flex justify-center'>
-      <div className=' w-[90%] h-full'>
+  }
 
-           {/* products Boxes  */}
-           <div className='grid grid-cols-2 md:grid-cols-4 gap-2 md:gap-5'>
-              {/* Product 01  */}
-            <div>
-                {/* image  */}
-            <div className='w-[180px] md:w-[287px] h-[180px] md:h-[287px]'> 
-                <Image src="/images/shop/products/Mask group-1.png" alt='Product Image' width={287} height={287} />
-            </div>
-                  {/* Tittle  */}
-            <div className='ml-5 md:ml-14'>
-                <h2 className='text-[16px] font-[Poppins] font-normal'>Trenton modular sofa_3</h2>
-                <h2 className='text-[20px] md:text-[24px] font-[Poppins] font-medium md:mt-2'>Rs. 25,000.00</h2>
-            </div>
+  return (
+    <div className="w-full h-auto mt-12 flex justify-center bg-gray-100 p-4">
+      <div className="w-full max-w-6xl">
+        {loading ? (
+          <div className="text-2xl text-gray-600 text-center mt-20">
+            Loading...
+          </div>
+        ) : error ? (
+          <div className="text-2xl text-red-500 text-center mt-20">{error}</div>
+        ) : (
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+            {products.map((product) => (
+              <div
+                key={product._id}
+                className="border p-4 bg-white shadow-md rounded-lg"
+              >
+                <Link
+                  href={product.slug ? `/product/${product.slug.current}` : "#"}
+                >
+                  <div className="cursor-pointer">
+                    {product.image ? (
+                      <Image
+                        src={urlFor(product.image).url()}
+                        alt={product.name || "Product Image"}
+                        width={300}
+                        height={200}
+                        className="w-full h-48 object-cover rounded-md"
+                      />
+                    ) : (
+                      <div className="w-full h-48 bg-gray-300 rounded-md flex items-center justify-center">
+                        <span>No Image</span>
+                      </div>
+                    )}
+                    <h1 className="text-lg font-semibold text-gray-800 text-center mt-2">
+                      {product.name || "No Name"}
+                    </h1>
+                    <p className="text-lg font-semibold text-gray-800 text-center">
+                      {product.price
+                        ? `$${product.price}`
+                        : "Price not Available"}
+                    </p>
+                  </div>
+                </Link>
+                <button className="mt-2 w-full py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition duration-300"  onClick={(e)=> handleAddToCart(e,product)}>
+                  Add To Cart
+                </button>
               </div>
-
-                {/* Product 02  */}
-            <div>
-                {/* image  */}
-            <div className='w-[180px] md:w-[287px] h-[180px] md:h-[287px]'> 
-                <Image src="/images/shop/products/Mask group-2.png" alt='Product Image' width={287} height={287} />
-            </div>
-                  {/* Tittle  */}
-            <div className=' ml-5 md:ml-14'>
-                <h2 className='text-[16px] font-[Poppins] font-normal'>Granite dining table with <br /> dining chair</h2>
-                <h2 className='text-[20px] md:text-[24px] font-[Poppins] font-medium md:mt-2'>Rs. 25,000.00</h2>
-            </div>
-              </div>
-
-                {/* Product 03  */}
-            <div>
-                {/* image  */}
-            <div className='w-[180px] md:w-[287px] h-[180px] md:h-[287px]'> 
-                <Image src="/images/shop/products/Mask group-3.png" alt='Product Image' width={287} height={287} />
-            </div>
-                  {/* Tittle  */}
-            <div className='ml-5 md:ml-14'>
-                <h2 className='text-[16px] font-[Poppins] font-normal'>Outdoor bar table and stool</h2>
-                <h2 className='text-[20px] md:text-[24px] font-[Poppins] font-medium mt-2'>Rs. 25,000.00</h2>
-            </div>
-              </div> 
-
-                {/* Product 04  */}
-            <div>
-                {/* image  */}
-            <div className='w-[180px] md:w-[287px] h-[180px] md:h-[287px]'> 
-                <Image src="/images/shop/products/Mask group-4.png" alt='Product Image' width={287} height={287} />
-            </div>
-                  {/* Tittle  */}
-            <div className='ml-5 md:ml-14'>
-                <h2 className='text-[16px] font-[Poppins] font-normal'>Plain console with teak <br /> mirror</h2>
-                <h2 className='text-[20px] md:text-[24px] font-[Poppins] font-medium mt-2'>Rs. 25,000.00</h2>
-            </div>
-              </div>
-
-                {/* Product 05  */}
-            <div>
-                {/* image  */}
-            <div className='w-[180px] md:w-[287px] h-[180px] md:h-[287px]'> 
-                <Image src="/images/shop/products/Mask group-5.png" alt='Product Image' width={287} height={287} />
-            </div>
-                  {/* Tittle  */}
-            <div className='ml-5 md:ml-14'>
-                <h2 className='text-[16px] font-[Poppins] font-normal'>Grain coffee table</h2>
-                <h2 className='text-[20px] md:text-[24px] font-[Poppins] font-medium mt-2'>Rs. 15,000.00</h2>
-            </div>
-              </div>
-
-                {/* Product 06  */}
-            <div>
-                {/* image  */}
-            <div className='w-[180px] md:w-[287px] h-[180px] md:h-[287px]'> 
-                <Image src="/images/shop/products/Mask group-6.png" alt='Product Image' width={287} height={287} />
-            </div>
-                  {/* Tittle  */}
-            <div className='ml-5 md:ml-14'>
-                <h2 className='text-[16px] font-[Poppins] font-normal'>Kent coffee table</h2>
-                <h2 className='text-[20px] md:text-[24px] font-[Poppins] font-medium mt-2'>Rs. 225,000.00</h2>
-            </div>
-              </div>
-
-                {/* Product 07  */}
-            <div>
-                {/* image  */}
-            <div className='w-[180px] md:w-[287px] h-[180px] md:h-[287px]'> 
-                <Image src="/images/shop/products/Mask group-7.png" alt='Product Image' width={287} height={287} />
-            </div>
-                  {/* Tittle  */}
-            <div className='ml-5 md:ml-14'>
-                <h2 className='text-[16px] font-[Poppins] font-normal'>Round coffee table_color 2</h2>
-                <h2 className='text-[20px] md:text-[24px] font-[Poppins] font-medium mt-2'>Rs. 251,000.00</h2>
-            </div>
-              </div>
-
-                {/* Product 08  */}
-            <div>
-                {/* image  */}
-            <div className='w-[180px] md:w-[287px] h-[180px] md:h-[287px]'> 
-                <Image src="/images/shop/products/Mask group-8.png" alt='Product Image' width={287} height={287} />
-            </div>
-                  {/* Tittle  */}
-            <div className='ml-5 md:ml-14'>
-                <h2 className='text-[16px] font-[Poppins] font-normal'>Reclaimed teak coffee table</h2>
-                <h2 className='text-[20px] md:text-[24px] font-[Poppins] font-medium mt-2'>Rs. 25,200.00</h2>
-            </div>
-              </div>
-
-                {/* Product 09  */}
-            <div>
-                {/* image  */}
-            <div className='w-[180px] md:w-[287px] h-[180px] md:h-[287px]'> 
-                <Image src="/images/shop/products/Mask group-9.png" alt='Product Image' width={287} height={287} />
-            </div>
-                  {/* Tittle  */}
-            <div className='ml-5 md:ml-14'>
-                <h2 className='text-[16px] font-[Poppins] font-normal'>Plain console_</h2>
-                <h2 className='text-[20px] md:text-[24px] font-[Poppins] font-medium mt-2'>Rs. 258,200.00</h2>
-            </div>
-              </div>
-
-                {/* Product 10  */}
-            <div>
-                {/* image  */}
-            <div className='w-[180px] md:w-[287px] h-[180px] md:h-[287px]'> 
-                <Image src="/images/shop/products/Mask group-10.png" alt='Product Image' width={287} height={287} />
-            </div>
-                  {/* Tittle  */}
-            <div className='ml-5 md:ml-14'>
-                <h2 className='text-[16px] font-[Poppins] font-normal'>Reclaimed teak Sideboard</h2>
-                <h2 className='text-[20px] md:text-[24px] font-[Poppins] font-medium mt-2'>Rs. 20,000.00</h2>
-            </div>
-              </div>
-
-                {/* Product 11  */}
-            <div>
-                {/* image  */}
-            <div className='w-[180px] md:w-[287px] h-[180px] md:h-[287px]'> 
-                <Image src="/images/shop/products/Mask group-11.png" alt='Product Image' width={287} height={287} />
-            </div>
-                  {/* Tittle  */}
-            <div className='ml-5 md:ml-14'>
-                <h2 className='text-[16px] font-[Poppins] font-normal'>SJP_0825 </h2>
-                <h2 className='text-[20px] md:text-[24px] font-[Poppins] font-medium mt-2'>Rs. 200,000.00</h2>
-            </div>
-              </div>
-
-                {/* Product 12  */}
-            <div>
-                {/* image  */}
-            <div className='w-[180px] md:w-[287px] h-[180px] md:h-[287px]'> 
-                <Image src="/images/shop/products/Mask group-12.png" alt='Product Image' width={287} height={287} />
-            </div>
-                  {/* Tittle  */}
-            <div className='ml-5 md:ml-14'>
-                <h2 className='text-[16px] font-[Poppins] font-normal'>Bella chair and table</h2>
-                <h2 className='text-[20px] md:text-[24px] font-[Poppins] font-medium mt-2'>Rs. 100,000.00</h2>
-            </div>
-              </div>
-
-                {/* Product 13  */}
-            <div>
-                {/* image  */}
-            <div className='w-[180px] md:w-[287px] h-[180px] md:h-[287px]'> 
-                <Image src="/images/shop/products/Mask group-13.png" alt='Product Image' width={287} height={287} />
-            </div>
-                  {/* Tittle  */}
-            <div className='ml-5 md:ml-14'>
-                <h2 className='text-[16px] font-[Poppins] font-normal'>Granite square side table</h2>
-                <h2 className='text-[20px] md:text-[24px] font-[Poppins] font-medium mt-2'>Rs. 258,800.00</h2>
-            </div>
-              </div>
-
-                {/* Product 14  */}
-            <div>
-                {/* image  */}
-            <div className='w-[180px] md:w-[287px] h-[180px] md:h-[287px]'> 
-                <Image src="/images/shop/products/Mask group-14.png" alt='Product Image' width={287} height={287} />
-            </div>
-                  {/* Tittle  */}
-            <div className='ml-5 md:ml-14'>
-                <h2 className='text-[16px] font-[Poppins] font-normal'>Asgaard sofa</h2>
-                <h2 className='text-[20px] md:text-[24px] font-[Poppins] font-medium mt-2'>Rs. 250,000.00</h2>
-            </div>
-              </div>
-
-                {/* Product 15  */}
-            <div>
-                {/* image  */}
-            <div className='w-[180px] md:w-[287px] h-[180px] md:h-[287px]'> 
-                <Image src="/images/shop/products/Mask group-15.png" alt='Product Image' width={287} height={287} />
-            </div>
-                  {/* Tittle  */}
-            <div className='ml-5 md:ml-14'>
-                <h2 className='text-[16px] font-[Poppins] font-normal'>Maya sofa three seater</h2>
-                <h2 className='text-[20px] md:text-[24px] font-[Poppins] font-medium mt-2'>Rs. 115,000.00</h2>
-            </div>
-              </div>
-
-                {/* Product 16  */}
-            <div>
-                {/* image  */}
-            <div className='w-[180px] md:w-[287px] h-[180px] md:h-[287px]'> 
-                <Image src="/images/shop/products/Mask group-16.png" alt='Product Image' width={287} height={287} />
-            </div>
-                  {/* Tittle  */}
-            <div className='ml-5 md:ml-14'>
-                <h2 className='text-[16px] font-[Poppins] font-normal'>Outdoor sofa set</h2>
-                <h2 className='text-[20px] md:text-[24px] font-[Poppins] font-medium mt-2'>Rs. 244,000.00</h2>
-            </div>
-              </div>
-      </div>   
-      {/* number  */}
-      <div className='flex justify-center items-center space-x-5 text-center mt-8 md:mt-32'>
-       
-        <p className='text-[16px] md:text-[20px] font-[Poppins] font-normal w-[45px] md:w-[60px] h-[50px] md:h-[50px] pt-3 bg-[#FBEBB5] rounded-md'>1</p>
-       
-        <p className='text-[16px] md:text-[20px] font-[Poppins] font-normal w-[45px] md:w-[60px] h-[50px] md:h-[50px] pt-3 bg-[#FFF9E5] rounded-md'>2</p>
-        <p className='text-[16px] md:text-[20px] font-[Poppins] font-normal w-[45px] md:w-[60px] h-[50px] md:h-[50px] pt-3 bg-[#FFF9E5] rounded-md'>3</p>
-        
-        <p className='text-[16px] md:text-[20px] font-[Poppins] font-light w-[80px] md:w-[98px] h-[40px] md:h-[50px] bg-[#FFF9E5] rounded-md pt-3'>Next</p>
+            ))}
+          </div>
+        )}
       </div>
-     
     </div>
-    </div>
-  )
-}
+  );
+};
 
-export default ShopProducts
+export default ShopProducts;
