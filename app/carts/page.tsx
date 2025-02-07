@@ -23,7 +23,11 @@ const CartPage = () => {
     const fetchCartItems = async () => {
       try {
         const items = await getCartItems();
-        setCartItems(items);
+        const itemsWithQuantity = items.map((item) => ({
+          ...item,
+          quantity: item.quantity || 1,
+        }));
+        setCartItems(itemsWithQuantity);
       } catch (error) {
         console.error("Failed to fetch cart items:", error);
       }
@@ -46,7 +50,11 @@ const CartPage = () => {
       if (result.isConfirmed) {
         await removeFromCart(id);
         const updatedItems = await getCartItems();
-        setCartItems(updatedItems);
+        const itemsWithQuantity = updatedItems.map((item) => ({
+          ...item,
+          quantity: item.quantity || 1,
+        }));
+        setCartItems(itemsWithQuantity);
 
         Swal.fire(
           "Removed!",
@@ -64,7 +72,11 @@ const CartPage = () => {
     try {
       await updateCartQuantity(id, quantity);
       const updatedItems = await getCartItems();
-      setCartItems(updatedItems);
+      const itemsWithQuantity = updatedItems.map((item) => ({
+        ...item,
+        quantity: item.quantity || 1,
+      }));
+      setCartItems(itemsWithQuantity);
     } catch (error) {
       console.error("Failed to update quantity:", error);
       Swal.fire("Error!", "Failed to update item quantity.", "error");
