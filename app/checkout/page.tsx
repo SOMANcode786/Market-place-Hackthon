@@ -35,6 +35,8 @@ export default function CheckoutPage() {
     email: false,
   });
 
+  type FormFields = keyof typeof formValues;
+
   useEffect(() => {
     const fetchCartItems = async () => {
       const items = await getCartItems();
@@ -49,16 +51,16 @@ export default function CheckoutPage() {
   }, []);
 
   const subtotal = (cartItems || []).reduce(
-    (total, item) => total + item.price * item.inventory,
+    (total, item) => total + item.price * (item.quantity ?? 1),
     0
-
   );
   const total = Math.max(subtotal - discount, 0);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const field = e.target.id as FormFields;
     setFormValues({
       ...formValues,
-      [e.target.id]: e.target.value,
+      [field]: e.target.value,
     });
   };
 
@@ -103,13 +105,7 @@ export default function CheckoutPage() {
         _type: "reference",
         _ref: item._id,
       })),
-      firstName: formValues.firstName,
-      lastName: formValues.lastName,
-      address: formValues.address,
-      city: formValues.city,
-      zipCode: formValues.zipCode,
-      phone: formValues.phone,
-      email: formValues.email,
+      ...formValues,
       total: total,
       discount: discount,
       status: "Pending",
@@ -134,6 +130,16 @@ export default function CheckoutPage() {
       setIsLoading(false);
     }
   };
+
+  // Define field groups with proper typing
+  const personalFields = ["firstName", "lastName"] as const;
+  const addressFields = [
+    "address",
+    "city",
+    "zipCode",
+    "phone",
+    "email",
+  ] as const;
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -176,11 +182,11 @@ export default function CheckoutPage() {
                   <div className="flex-1">
                     <h3 className="text-sm font-medium">{item.name}</h3>
                     <p className="text-xs text-gray-500">
-                      Quantity: {item.inventory}
+                      Quantity: {item.quantity ?? 1}
                     </p>
                   </div>
                   <p className="text-sm font-medium">
-                    ${item.price * item.inventory}
+                    ${item.price * (item.quantity ?? 1)}
                   </p>
                 </div>
               ))
@@ -203,7 +209,7 @@ export default function CheckoutPage() {
           <div className="bg-white border rounded-lg p-6 space-y-6">
             <h2 className="text-xl font-semibold">Billing Information</h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              {["firstName", "lastName"].map((field) => (
+              {personalFields.map((field) => (
                 <div key={field}>
                   <label htmlFor={field}>
                     {field.replace(/([A-Z])/g, " $1")}
@@ -222,7 +228,7 @@ export default function CheckoutPage() {
                 </div>
               ))}
             </div>
-            {["address", "city", "zipCode", "phone", "email"].map((field) => (
+            {addressFields.map((field) => (
               <div key={field}>
                 <label htmlFor={field}>
                   {field.replace(/([A-Z])/g, " $1")}
