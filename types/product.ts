@@ -18,5 +18,6 @@ export interface Product {
   isFeaturedProduct?: boolean; // Flag to highlight featured products
   stockLevel?: number; // Available stock of the product
   category?: string; // Category to which the product belongs
-  inventory?: number; // Quantity of the product in the cart
+  inventory?: number;
+  quantity?:number;// Quantity of the product in the cart
 }

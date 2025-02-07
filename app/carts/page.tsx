@@ -17,17 +17,18 @@ import Delivery from "../components/shop/delivery";
 
 const CartPage = () => {
   const [cartItems, setCartItems] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(false);
   const router = useRouter();
 
   useEffect(() => {
     const fetchCartItems = async () => {
       try {
         const items = await getCartItems();
-        const itemsWithQuantity = items.map((item) => ({
+        const itemsWithInventory = items.map((item) => ({
           ...item,
-          quantity: item.quantity || 1,
+          inventory: item.inventory ?? 1, // Default inventory to 1 if undefined
         }));
-        setCartItems(itemsWithQuantity);
+        setCartItems(itemsWithInventory);
       } catch (error) {
         console.error("Failed to fetch cart items:", error);
       }
@@ -49,12 +50,8 @@ const CartPage = () => {
 
       if (result.isConfirmed) {
         await removeFromCart(id);
-        const updatedItems = await getCartItems();
-        const itemsWithQuantity = updatedItems.map((item) => ({
-          ...item,
-          quantity: item.quantity || 1,
-        }));
-        setCartItems(itemsWithQuantity);
+        const updatedItems = cartItems.filter((item) => item._id !== id);
+        setCartItems(updatedItems);
 
         Swal.fire(
           "Removed!",
@@ -68,15 +65,14 @@ const CartPage = () => {
     }
   };
 
-  const handleQuantityChange = async (id: string, quantity: number) => {
+  const handleQuantityChange = async (id: string, inventory: number) => {
     try {
-      await updateCartQuantity(id, quantity);
-      const updatedItems = await getCartItems();
-      const itemsWithQuantity = updatedItems.map((item) => ({
-        ...item,
-        quantity: item.quantity || 1,
-      }));
-      setCartItems(itemsWithQuantity);
+      await updateCartQuantity(id, inventory);
+      setCartItems((prevItems) =>
+        prevItems.map((item) =>
+          item._id === id ? { ...item, inventory } : item
+        )
+      );
     } catch (error) {
       console.error("Failed to update quantity:", error);
       Swal.fire("Error!", "Failed to update item quantity.", "error");
@@ -85,25 +81,26 @@ const CartPage = () => {
 
   const handleIncrement = (id: string) => {
     const product = cartItems.find((item) => item._id === id);
-    if (product && product.quantity < 10) {
-      handleQuantityChange(id, product.quantity + 1);
+    if (product && (product.inventory ?? 1) < 10) {
+      handleQuantityChange(id, (product.inventory ?? 1) + 1);
     }
   };
 
   const handleDecrement = (id: string) => {
     const product = cartItems.find((item) => item._id === id);
-    if (product && product.quantity > 1) {
-      handleQuantityChange(id, product.quantity - 1);
+    if (product && (product.inventory ?? 1) > 1) {
+      handleQuantityChange(id, (product.inventory ?? 1) - 1);
     }
   };
 
   const totalAmount = cartItems.reduce(
-    (total, item) => total + item.price * item.quantity,
+    (total, item) => total + item.price * (item.inventory ?? 1),
     0
   );
 
   const handleProceed = async () => {
     try {
+      setLoading(true);
       const result = await Swal.fire({
         title: "Processing your order...",
         text: "Please wait.",
@@ -122,6 +119,8 @@ const CartPage = () => {
     } catch (error) {
       console.error("Failed to process order:", error);
       Swal.fire("Error!", "Failed to process your order.", "error");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -137,9 +136,7 @@ const CartPage = () => {
               Shop
             </Link>
             <CgChevronRight className="w-4 h-4 text-[#666666]" />
-            <span className="text-sm">
-              <Link href="/checkout">Checkout</Link>
-            </span>
+            <span className="text-sm text-black font-semibold">Cart</span>
           </nav>
         </div>
       </div>
@@ -178,7 +175,7 @@ const CartPage = () => {
                       >
                         -
                       </button>
-                      <span className="text-lg">{item.quantity}</span>
+                      <span className="text-lg">{item.inventory ?? 1}</span>
                       <button
                         onClick={() => handleIncrement(item._id)}
                         className="px-3 py-1 bg-gray-300 rounded-md hover:bg-gray-400 transition"
@@ -188,12 +185,17 @@ const CartPage = () => {
                     </div>
                   </div>
                 </div>
-                <button
-                  onClick={() => handleRemove(item._id)}
-                  className="px-6 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition"
-                >
-                  Remove
-                </button>
+                <div className="text-right">
+                  <p className="text-lg font-semibold text-gray-800">
+                    Total: ${(item.price * (item.inventory ?? 1)).toFixed(2)}
+                  </p>
+                  <button
+                    onClick={() => handleRemove(item._id)}
+                    className="mt-2 px-6 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition"
+                  >
+                    Remove
+                  </button>
+                </div>
               </div>
             ))
           ) : (
@@ -211,9 +213,10 @@ const CartPage = () => {
             </div>
             <button
               onClick={handleProceed}
-              className="w-full px-6 py-3 bg-green-600 text-white rounded-md hover:bg-green-700 transition"
+              disabled={loading}
+              className={`w-full px-6 py-3 rounded-md transition ${loading ? "bg-gray-400" : "bg-green-600 hover:bg-green-700"} text-white`}
             >
-              Proceed to Checkout
+              {loading ? "Processing..." : "Proceed to Checkout"}
             </button>
           </div>
         )}
