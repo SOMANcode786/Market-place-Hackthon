@@ -9,7 +9,7 @@ interface ProductPageProps {
   params: { slug: string };
 }
 
-async function getProduct(slug: string): Promise<Product | null> {
+async function getProduct(slug: string): Promise<Product> {
   return client.fetch(
     groq`*[_type == "product" && slug.current == $slug][0]{
       _id,
@@ -19,14 +19,14 @@ async function getProduct(slug: string): Promise<Product | null> {
       price,
       description,
       category,
-      discountPercentage,
+      discountPercentage
     }`,
     { slug }
   );
 }
 
 export default async function ProductPage({ params }: ProductPageProps) {
-  const { slug } = params;
+  const { slug } = params; // Removed unnecessary await
   const product = await getProduct(slug);
 
   if (!product) {
@@ -39,6 +39,10 @@ export default async function ProductPage({ params }: ProductPageProps) {
       </div>
     );
   }
+
+  const discountedPrice = product.discountPercentage
+    ? product.price - (product.price * product.discountPercentage) / 100
+    : product.price;
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-8">
@@ -56,24 +60,17 @@ export default async function ProductPage({ params }: ProductPageProps) {
         </div>
         <div className="flex flex-col gap-8">
           <h1 className="text-3xl font-bold text-gray-800">{product.name}</h1>
-          <p className="text-xl font-sans text-gray-600">
-            {product.description || "No description available"}
-          </p>
-          <div className="flex flex-col gap-4">
-            <p className="text-2xl font-semibold text-blue-600">
-              ${product.price || "Price not available"}
-            </p>
+          <p className="text-xl text-gray-600">
+            Price: ${discountedPrice.toFixed(2)}
             {product.discountPercentage && (
-              <p className="text-lg text-red-500">
-                {product.discountPercentage}% OFF
-              </p>
+              <span className="ml-2 text-sm text-red-500">
+                (Discount {product.discountPercentage}%)
+              </span>
             )}
-            {product.category && (
-              <p className="text-sm text-gray-500">
-                Category: {product.category}
-              </p>
-            )}
-          </div>
+          </p>
+          {product.description && (
+            <p className="text-md text-gray-500">{product.description}</p>
+          )}
         </div>
       </div>
     </div>

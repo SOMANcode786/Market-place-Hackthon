@@ -14,7 +14,7 @@ export default {
       title: "Slug",
       options: {
         source: "name", // Automatically generate slug from the name
-        maxLength: 90, // Limit the length of the slug
+        // Limit the length of the slug
       },
     },
     {

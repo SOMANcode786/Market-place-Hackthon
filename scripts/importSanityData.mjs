@@ -9,7 +9,7 @@ const client = createClient({
   useCdn: false, // Set to true if you want faster reads
   apiVersion: "2025-01-13",
   token:
-    "sk5E8qA8oXUDhrJpacEO7izh1FEuDihVfAdvPi7SVfam5zoBVUmRLg6kVsUhfCItXpIYDeGJUdlK5udObh4oxzMyXqGtm95brIVbm61zEUzQGFRxiiJ9TP5ysGnInRiCfCACEdJ1ay8CuaQuAsDgmwiKoXCArtHTEi4yRMT67Tbxe1qBBKGP", // Replace with your Sanity token
+    "sk9dvMN2BQuJ46d6DSAHavgUSSogAhpz7C8FFLCaYqnHG8LXDjrYNySZQtd4Exzmt2aYtRj8HN6koS9aPnZyjLq7lzOVEbMvELCneSgZ6Kccx1Ecx0ZReJ9cHz3VeweOOYWhp4QPuluShnAagIs1qp4h5JTZhlzMCJKYAunSXomhpTXxPSHl", // Replace with your Sanity token
 });
 
 // Function to upload an image to Sanity

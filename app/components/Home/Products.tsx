@@ -6,6 +6,7 @@ import { Product } from "@/types/product";
 import { client } from "@/sanity/lib/client";
 import { four } from "@/sanity/lib/queries";
 import { urlFor } from "@/sanity/lib/image";
+import SingleProduct from "@/app/singleProduct/page";
 
 const Products = () => {
   const [products, setProducts] = useState<Product[]>([]);
@@ -64,7 +65,7 @@ const Products = () => {
               key={product._id}
               className="border p-4 rounded-lg shadow-md hover:shadow-lg transition-shadow duration-300"
             >
-           <Link href={`/product/${product._id}`}>
+           <Link href={`/singleProduct/${product._id}`}>
   <div className="cursor-pointer">
     <Image
       src={
